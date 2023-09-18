@@ -2,6 +2,8 @@ import sounddevice as sd
 from math import sqrt, ceil
 # from numpy import int8
 
+DEVICE_NUM = 8
+
 THRESHOLD_EDGE = 0.7
 AGC_FACTOR = 0.0001
 
@@ -112,7 +114,7 @@ class Stackmat:
     def processByteBlock(self):
         state = decodeByteblock(self.byteBuffer)
         if state != None:
-            print(state.state, state.time, state.resting, state.resting)
+            print(state.state, state.time, state.resting, state.running)
         self.byteBuffer = []
 
 class StackmatState:
@@ -133,12 +135,16 @@ def decodeByteblock(byteBuffer):
         if sumDigits != checkSum:
             return None
 
-        milli = digits[0] * 60 # minutes
-        milli += digits[1] + digits[2] # seconds
-        milli += milli * 1000 + digits[3] * 100 + digits[4] * 10 + digits[5] # milliseconds
-                
+        milli = (digits[5] +
+                 digits[4] * 10 +
+                 digits[3] * 100 +
+                 digits[2] * 1000 +
+                 digits[1] * 10000 +
+                 digits[0] * 60000)
+
         return StackmatState(state, milli)
     except ValueError:
         return None
 
-Stackmat(8)
+
+Stackmat(DEVICE_NUM)
